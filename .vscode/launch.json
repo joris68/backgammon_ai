@@ -1,0 +1,13 @@
+{
+     "version": "0.2.0",
+     "configurations": [
+       {
+         "name": "Python: Debug src/",
+         "type": "debugpy",
+         "request": "launch",
+         "module": "src/test_backgammonengine",
+         "cwd": "${workspaceFolder}/src",
+         "console": "integratedTerminal"
+       }
+     ]
+   }
