@@ -8,3 +8,5 @@ def generate_dice_for_move() -> list[int]:
           return [first, second] * 2
      else:
           return [first , second]
+
+#print(generate_dice_for_move())
