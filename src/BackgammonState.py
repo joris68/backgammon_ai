@@ -24,7 +24,7 @@ class BackgammonState:
           self.ended : bool = ended
      
      def __str__(self):
-          return f"{self.board},  caughtWhite : {self.whiteCaught}, caughtBlack : {self.blackCaught}, whiteBearing : {self.whiteBearing} , blackbearing : {self.blackBearing}"
+          return f"{self.board},  whiteCaught : {self.whiteCaught}, caughtBlack : {self.blackCaught}, whiteBearing : {self.whiteBearing} , blackbearing : {self.blackBearing}"
 
      def __repr__(self):
-          return f"{self.board},  caughtWhite : {self.whiteCaught}, caughtBlack : {self.blackCaught}, whiteBearing : {self.whiteBearing} , blackbearing : {self.blackBearing} , blackOutside : {self.blackOutside},  whiteOutside : {self.whiteOutside}"
+          return f"{self.board},  whiteCaught : {self.whiteCaught}, caughtBlack : {self.blackCaught}, whiteBearing : {self.whiteBearing} , blackbearing : {self.blackBearing} , blackOutside : {self.blackOutside},  whiteOutside : {self.whiteOutside} ended : {self.ended}"

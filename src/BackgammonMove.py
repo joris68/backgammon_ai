@@ -21,9 +21,15 @@ class BackgammonMove(ABC):
 
 class BackgammenMoveWhite(BackgammonMove):
 
-     def __init__(self, fromField, toField, insertionMove : bool , bearingOffMove : bool):
+     def __init__(self, fromField, toField, insertionMove : bool = False , bearingOffMove : bool = False):
           assert fromField > toField , "White should move right to left"
           super().__init__(fromField, toField, insertionMove=insertionMove, bearingOffMove=bearingOffMove)
+     
+     def __str__(self):
+          return f"({self.fromField} ,  {self.toField})"
+     
+     def __repr__(self):
+          return f"({self.fromField} ,  {self.toField})"
 
 
 """

@@ -23,7 +23,6 @@ def _white_number_stones(game_state : BackgammonState) -> bool:
      for _ , x in enumerate(game_state.board):
           if x < 0:
                stones += x
-     print(stones)
      return (-game_state.whiteCaught + stones + game_state.whiteOutside) == -15
 
 """
@@ -50,7 +49,7 @@ def backgammonstate_invariant(game_state : BackgammonState):
      if not _white_number_stones(game_state):
           raise Exception(ERRORS["WHITE_STONES"])
      if not _invariant_stones_outside(game_state=game_state):
-          raise Exception(ERRORS["STONES_OUTSIDE"])#
+          raise Exception(ERRORS["STONES_OUTSIDE"])
      if not _outside_and_bearing(game_state=game_state):
           raise Exception(ERRORS["OUTSIDE_AND_BEARING"])
 
