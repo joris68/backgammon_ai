@@ -1,13 +1,13 @@
 {
-     "version": "0.2.0",
-     "configurations": [
-       {
-         "name": "Python: Debug src/",
-         "type": "debugpy",
-         "request": "launch",
-         "module": "src/test_backgammonengine",
-         "cwd": "${workspaceFolder}/src",
-         "console": "integratedTerminal"
-       }
-     ]
-   }
+  "version": "0.2.0",
+  "configurations": [
+      {
+          "name": "Debug Game Module",
+          "type": "debugpy",
+          "request": "launch",
+          "module": "src.Game",  // Run as a module
+          "cwd": "${workspaceFolder}",  // Set working directory to project root
+          "console": "integratedTerminal"
+      }
+  ]
+}
