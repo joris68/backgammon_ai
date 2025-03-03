@@ -19,16 +19,19 @@ logging.basicConfig(
 
 logger = logging.getLogger(__name__)
 
+
 def play_game():
 
      is_black = True
      curr_game_state = STARTING_GAME_STATE
-     logger.info(f"starting game state: {curr_game_state}")
+     #logger.info(f"starting game state: {curr_game_state}")
      counter = 0
      while not curr_game_state.ended:
           logger.info(f"the {counter}th move")
+          logger.info(f"Game state before {curr_game_state}")
           the_dice = generate_dice_for_move()
           logger.info(f"Dice : {the_dice}")
+          logger.info(f"Turn {"black" if is_black else "white"}")
           poss_next_states = generate_moves(curr_game_state, is_black= is_black, dice=the_dice)
           logger.info(f"got {len(poss_next_states)} moves")
           curr_game_state = np.random.choice(poss_next_states)
