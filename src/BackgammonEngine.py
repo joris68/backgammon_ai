@@ -43,7 +43,7 @@ def _generate_black_moves(game_state : BackgammonState, dice : list[int]) -> lis
      if game_state.blackCaught > 0:
           game_state , dice_used = _insert_stones_black(game_state=game_state, dice=dice)
      
-     if len(dice_used) == len(dice) or (len(dice_used) == 0 and game_state.whiteCaught > 0):
+     if len(dice_used) == len(dice) or (len(dice_used) == 0 and game_state.blackCaught > 0):
           return [game_state] 
 
      return _generate_black_game_states(board_state=game_state, dice=get_unused_items(dice, dice_used))
@@ -64,14 +64,14 @@ def _generate_white_moves(game_state : BackgammonState, dice : list[int]) -> lis
 """
      gives back the end game state and the number of insertion done. Inserton black done from [0, 5]
 """
-def _insert_stones_black(game_state : BackgammonState , dice : list[int]) -> tuple[BackgammonState , list[int]]:
+def _insert_stones_black(game_state : BackgammonState , dice : list[int]) -> tuple[BackgammonState , list[int], int]:
      dice_used = []
      for d in dice:
           if  game_state.blackCaught > 0 and game_state.board[d] >= 0:
                game_state = update_board_move_black(game_state=game_state, move_black=BackGammonMoveBlack(fromField=-1 , toField=d , insertionMove=True,  bearingOffMove=False))
                dice_used.append(d)
      
-     return game_state, dice_used
+     return game_state, dice_used 
 
 
 def _insert_stones_white(game_state : BackgammonState , dice : list[int]) -> tuple[BackgammonState , list[int]]:
@@ -86,11 +86,17 @@ def _insert_stones_white(game_state : BackgammonState , dice : list[int]) -> tup
 
 
 def _generate_black_game_states(board_state : BackgammonState, dice : list[int]) -> list[BackgammonState]:
-     all_poss_states : list[BackgammonState] = []
+     all_poss_states : set[BackgammonState] = set()
 
      def backtrack_states(inner_board_state : BackgammonState , inner_dice : list[int]) -> None:
+          if inner_board_state.ended:
+               if inner_board_state not in all_poss_states:
+                    all_poss_states.add(copy.deepcopy(inner_board_state))
+               return
+
           if len(inner_dice) == 0:
-               all_poss_states.append(copy.deepcopy(inner_board_state))
+               if inner_board_state not in all_poss_states:
+                    all_poss_states.add(copy.deepcopy(inner_board_state))
                return
           
           if inner_board_state.blackBearing:
@@ -115,7 +121,10 @@ def _generate_black_game_states(board_state : BackgammonState, dice : list[int])
           
      backtrack_states(inner_board_state=board_state , inner_dice=dice)
 
-     return all_poss_states
+     if len(all_poss_states) == 0:
+          return [board_state]
+     else:
+          return list(all_poss_states)
 
 """
      there might be the possibility to beat a white checke while in the bearing of phase
@@ -126,7 +135,10 @@ def _beat_move_possible_in_bearing_off_black(game_state, dice : int) -> list[Bac
           if  idx + dice <= 23 and  game_state.board[idx + dice] == -1:
                beat_moves.append(BackGammonMoveBlack(idx, toField=idx + dice))
      
-     return None
+     if len(beat_moves) > 0:
+          return beat_moves
+     else:
+          return None
 
 """
      this takes a backgammon state and bears a stone off given these rules.
@@ -156,24 +168,25 @@ def _update_board_black_bearing(game_state : BackgammonState, dice : int) -> Bac
           backgammonstate_invariant(new_game_state)
           return new_game_state
      
-     if target_field == 0:
-          # first move upwards
-          for idx in range(target_field -1 , FIELD_18 -1, -1):
-               if new_game_state.board[idx] > 0:
-                    # bear of the checker
-                    new_game_state.board[target_field_index] -= 1
-                    new_game_state.blackOutside += 1
-                    new_game_state.ended = _game_ended_black(new_game_state)
-                    backgammonstate_invariant(new_game_state)
-                    return new_game_state
+     # first move upwards
+     for idx in range(FIELD_18 , target_field_index, 1):
+          if new_game_state.board[idx] > 0:
+               # bear of the checker
+               new_game_state.board[idx] -= 1
+               new_game_state.blackOutside += 1
+               new_game_state.ended = _game_ended_black(new_game_state)
+               backgammonstate_invariant(new_game_state)
+               return new_game_state
           
-          for idx in range(target_field +1 , LAST_FIELD +1, 1): 
-               if new_game_state.board[idx] > 0:
-                    new_game_state.board[target_field_index] -= 1
-                    new_game_state.blackOutside += 1
-                    new_game_state.ended = _game_ended_black(new_game_state)
-                    backgammonstate_invariant(new_game_state)
-                    return new_game_state
+     for idx in range(target_field_index +1 , LAST_FIELD +1, 1): 
+          if new_game_state.board[idx] > 0:
+               new_game_state.board[idx] -= 1
+               new_game_state.blackOutside += 1
+               new_game_state.ended = _game_ended_black(new_game_state)
+               backgammonstate_invariant(new_game_state)
+               return new_game_state
+               
+     raise Exception("something wrong in the blackBearing")
 
 
 def _update_board_white_bearing(game_state : BackgammonState, dice : int) -> BackgammonState:
@@ -185,7 +198,7 @@ def _update_board_white_bearing(game_state : BackgammonState, dice : int) -> Bac
 
      target_field_index = VIRTUAL_INDEX_TO_REACH + dice
      target_field = new_game_state.board[target_field_index]
-     if target_field > 0:
+     if target_field < 0:
           # bear of the stone
           new_game_state.board[target_field_index] += 1
           new_game_state.whiteOutside += 1
@@ -193,24 +206,26 @@ def _update_board_white_bearing(game_state : BackgammonState, dice : int) -> Bac
           backgammonstate_invariant(new_game_state)
           return new_game_state
      
-     if target_field == 0:
-          # first move upwards
-          for idx in range(target_field + 1 , FIELD_5 + 1 , 1):
-               if new_game_state.board[idx] > 0:
-                    # bear of the checker
-                    new_game_state.board[target_field_index] += 1
-                    new_game_state.whiteOutside += 1
-                    new_game_state.ended = _game_ended_white(new_game_state)
-                    backgammonstate_invariant(new_game_state)
-                    return new_game_state
-          
-          for idx in range(target_field +1 , FIRST_FIELD +1, -1): 
-               if new_game_state.board[idx] > 0:
-                    new_game_state.board[target_field_index] += 1
-                    new_game_state.whiteOutside += 1
-                    new_game_state.ended = _game_ended_white(new_game_state)
-                    backgammonstate_invariant(new_game_state)
-                    return new_game_state
+     
+     # first move upwards
+     for idx in range(target_field_index +1 , FIELD_5 +1 , 1):
+          if new_game_state.board[idx] < 0:
+                # bear of the checker
+               new_game_state.board[idx] += 1
+               new_game_state.board[idx - dice] -= 1  
+               new_game_state.ended = _game_ended_white(new_game_state)
+               backgammonstate_invariant(new_game_state)
+               return new_game_state
+     #move downwards
+     for idx in range(target_field_index - 1 , FIRST_FIELD -1, -1): 
+          if new_game_state.board[idx] < 0:
+               new_game_state.board[idx] += 1
+               new_game_state.whiteOutside += 1
+               new_game_state.ended = _game_ended_white(new_game_state)
+               backgammonstate_invariant(new_game_state)
+               return new_game_state
+     
+     raise Exception("something wrong in the whiteBearing")
 
 def _game_ended_black(game_state : BackgammonState) -> bool:
      return game_state.blackOutside == 15
@@ -263,6 +278,7 @@ def update_board_move_black(game_state : BackgammonState, move_black : BackGammo
           new_board_state.blackCaught -= 1
           new_board_state.board[move_black.toField] += 1
           new_board_state.blackBearing = is_black_bearing(new_board_state)
+          new_board_state.whiteBearing = is_white_bearing(new_board_state)
           backgammonstate_invariant(new_board_state)
           return new_board_state
 
@@ -273,6 +289,7 @@ def update_board_move_black(game_state : BackgammonState, move_black : BackGammo
           new_board_state.whiteCaught += 1
           new_board_state.board[move_black.toField] = 1
           new_board_state.blackBearing = is_black_bearing(new_board_state)
+          new_board_state.whiteBearing = is_white_bearing(new_board_state)
           backgammonstate_invariant(new_board_state)
           return new_board_state
      
@@ -282,6 +299,7 @@ def update_board_move_black(game_state : BackgammonState, move_black : BackGammo
 
      
      new_board_state.blackBearing = is_black_bearing(new_board_state)
+     new_board_state.whiteBearing = is_white_bearing(new_board_state)
      backgammonstate_invariant(new_board_state)
      return new_board_state
 
@@ -292,7 +310,7 @@ def is_black_bearing(game_state : BackgammonState) -> bool:
      if game_state.blackCaught > 0:
           return False
      # 17 till 24
-     board_slice = game_state.board[17:24]
+     board_slice = game_state.board[18:24]
      sum = 0
      for x in board_slice:
           if x > 0:
@@ -305,11 +323,17 @@ def is_black_bearing(game_state : BackgammonState) -> bool:
 
 def _generate_white_game_states(board_state : BackgammonState, dice : list[int]) -> list[BackgammonState]:
 
-     all_poss_states : list[BackgammonState] = []
+     all_poss_states : set[BackgammonState] = set()
 
      def backtrack_states(inner_board_state : BackgammonState , inner_dice : list[int]) -> None:
+          if inner_board_state.ended:
+               if inner_board_state not in all_poss_states:
+                    all_poss_states.add(copy.deepcopy(inner_board_state))
+               return
+
           if len(inner_dice) == 0:
-               all_poss_states.append(copy.deepcopy(inner_board_state))
+               if inner_board_state not in all_poss_states:
+                    all_poss_states.add(copy.deepcopy(inner_board_state))
                return
           
           if inner_board_state.whiteBearing:
@@ -334,19 +358,25 @@ def _generate_white_game_states(board_state : BackgammonState, dice : list[int])
           
      backtrack_states(inner_board_state=board_state , inner_dice=dice)
 
-     return all_poss_states
+     if len(all_poss_states) == 0:
+          return [board_state]
+     else:
+          return list(all_poss_states)
 
 
 """
      there might be the possibility to beat a black checkers while in the bearing of phase
 """
-def _beat_move_possible_in_bearing_off_white(game_state, dice : int) -> list[BackGammonMoveBlack] | None:
+def _beat_move_possible_in_bearing_off_white(game_state, dice : int) -> list[BackgammenMoveWhite] | None:
      beat_moves : list[BackgammonMove] = [] 
      for idx in range(5, -1, -1):
           if  idx - dice >= 0 and  game_state.board[idx - dice] == 1:
-               beat_moves.append(BackGammonMoveBlack(idx, toField=idx + dice))
+               beat_moves.append(BackgammenMoveWhite(idx, toField=idx - dice))
      
-     return None
+     if len(beat_moves) > 0:
+          return beat_moves
+     else:
+          return None
 
 def _valid_move_white(game_state : BackgammonState, move_white : BackgammenMoveWhite) -> bool:
 
@@ -360,7 +390,7 @@ def _moves_right_white(game_state : BackgammonState, move : BackgammenMoveWhite)
 
     
 def _move_in_bounds_bearing_white(move : BackgammenMoveWhite) -> bool:
-     return (move.fromField <= 5 and move.toField >= 0)
+     return (move.fromField <= 5 and move.toField >= -1)
 
 
 def update_board_move_white(game_state : BackgammonState, move_white : BackgammenMoveWhite) -> BackgammonState:
@@ -371,7 +401,8 @@ def update_board_move_white(game_state : BackgammonState, move_white : Backgamme
      if move_white.fromField == 24 and move_white.insertionMove:
           new_board_state.whiteCaught -= 1
           new_board_state.board[move_white.toField] -= 1
-          new_board_state.blackBearing = is_white_bearing(new_board_state)
+          new_board_state.whiteBearing = is_white_bearing(new_board_state)
+          new_board_state.blackBearing = is_black_bearing(new_board_state)
           backgammonstate_invariant(new_board_state)
           return new_board_state
      
@@ -381,7 +412,8 @@ def update_board_move_white(game_state : BackgammonState, move_white : Backgamme
      if new_board_state.board[move_white.toField] == 1:
           new_board_state.blackCaught += 1
           new_board_state.board[move_white.toField] = -1
-          new_board_state.blackBearing = is_white_bearing(new_board_state)
+          new_board_state.whiteBearing = is_white_bearing(new_board_state)
+          new_board_state.blackBearing = is_black_bearing(new_board_state)
           backgammonstate_invariant(new_board_state)
           return new_board_state
 
@@ -389,7 +421,8 @@ def update_board_move_white(game_state : BackgammonState, move_white : Backgamme
      if new_board_state.board[move_white.toField] <= 0:
           new_board_state.board[move_white.toField] -= 1
 
-     new_board_state.blackBearing = is_white_bearing(new_board_state)
+     new_board_state.whiteBearing = is_white_bearing(new_board_state)
+     new_board_state.blackBearing = is_black_bearing(new_board_state)
      backgammonstate_invariant(new_board_state)
      return new_board_state
      
@@ -402,6 +435,6 @@ def is_white_bearing(game_state : BackgammonState) -> bool:
      sum = 0
      for x in board_slice:
           if x < 0:
-               sum -= x
+               sum += abs(x)
      
-     return (sum - game_state.whiteOutside) == -15
+     return (sum + game_state.whiteOutside) == 15

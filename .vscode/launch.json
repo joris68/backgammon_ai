@@ -5,7 +5,7 @@
           "name": "Debug Game Module",
           "type": "debugpy",
           "request": "launch",
-          "module": "src.Game",  // Run as a module
+          "module": "src.test_backgammonengine",  // Run as a module
           "cwd": "${workspaceFolder}",  // Set working directory to project root
           "console": "integratedTerminal"
       }
