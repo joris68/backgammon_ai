@@ -17,15 +17,12 @@ logger = logging.getLogger(__name__)
 def get_unused_items(all_items, used_items):
     all_count = Counter(all_items)
     used_count = Counter(used_items)
-
-    # Subtract used counts from all counts
     for item, count in used_count.items():
         all_count[item] -= count
 
-    # Reconstruct the list with remaining occurrences
     unused_items = []
     for item, count in all_count.items():
-        unused_items.extend([item] * max(count, 0))  # Ensure no negative counts
+        unused_items.extend([item] * max(count, 0))
 
     return unused_items
 
@@ -190,8 +187,9 @@ def _update_board_black_bearing(game_state : BackgammonState, dice : int) -> Bac
                backgammonstate_invariant(game_state_before=game_state, game_state_after=new_game_state)
                return new_game_state
 
-     #return new_game_state          
-     raise Exception("something wrong in the blackBearing")
+     return new_game_state
+     #logger.info(f"gamestate : {new_game_state} dice : {dice}")          
+     #raise Exception("something wrong in the blackBearing")
 
 
 def _update_board_white_bearing(game_state : BackgammonState, dice : int) -> BackgammonState:
@@ -239,7 +237,9 @@ def _update_board_white_bearing(game_state : BackgammonState, dice : int) -> Bac
                backgammonstate_invariant(game_state_before=game_state, game_state_after=new_game_state)
                return new_game_state
      
-     raise Exception("something wrong in the whiteBearing")
+     return new_game_state
+     #logger.info(f"gamestate : {new_game_state} dice : {dice}")
+     #raise Exception("something wrong in the whiteBearing")
 
 def _game_ended_black(game_state : BackgammonState) -> bool:
      return game_state.blackOutside == 15

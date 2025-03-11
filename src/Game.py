@@ -3,6 +3,7 @@ from src.BackgammonState import BackgammonState
 from src.utils import generate_dice_for_move
 import numpy as np
 import logging
+import matplotlib.pyplot as plt
 
 
 STARTING_GAME_STATE = BackgammonState([2, 0, 0, 0, 0, -5,   0, -3, 0 ,0 ,0 , 5,   -5, 0,0,0,3,0,   5, 0,0,0,0,-2], whiteCaught=0, blackCaught=0,
@@ -74,6 +75,22 @@ class GammonMonteCarlo:
           return counter, won, moves_counter
 
 
+
+
+def plot_average_game_length(game_lengths : list[int]) -> None:
+     plt.hist(game_lengths, bins=10, orientation='vertical', color='purple', alpha=0.7)
+     plt.xlabel('Plays per Game')
+     plt.ylabel('Frequency')
+     plt.title('Distribution of Plays per Game')
+     plt.savefig('distribution_plays_per_game.png', dpi=300)
+     plt.show()
+
+
 if __name__ == '__main__':
-     monte = GammonMonteCarlo(20)
-     print(monte._simulate_games())
+     monte = GammonMonteCarlo(10000)
+     plays_per_game , won, moves_counter = monte._simulate_games()
+     plot_average_game_length(game_lengths=plays_per_game)
+
+
+
+

@@ -9,7 +9,6 @@ logger = logging.getLogger(__name__)
 ERRORS = {
      "BLACK_STONES" : "Black stones aint adding up",
      "WHITE_STONES" : "White stones aint adding up",
-     "STONES_OUTSIDE" : "Both sides cant have stones beaton at the same time",
      "OUTSIDE_AND_BEARING" : "If there are stones outside Bearing should be false"
 }
 
