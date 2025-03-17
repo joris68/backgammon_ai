@@ -1,4 +1,4 @@
-
+from src.BackgammonState import BackgammonState
 """
      To represent stones that have been beaton by other player the:
 

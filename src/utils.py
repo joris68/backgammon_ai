@@ -82,7 +82,7 @@ def encode_backgammonstate(game_state : BackgammonState, is_black : bool) -> tor
      for field in game_state.board:
           encode_field(field, store=field_encoding)
      
-     print(len(field_encoding))
+     #print(len(field_encoding))
 
      list_tensor.extend(field_encoding)
      list_tensor.append(encode_outside(game_state.whiteCaught))
@@ -91,8 +91,8 @@ def encode_backgammonstate(game_state : BackgammonState, is_black : bool) -> tor
      list_tensor.append(encode_borne_off(game_state.blackOutside))
      list_tensor.extend(encode_turn(is_black=is_black))
 
-     print(len(list_tensor))
-     print(list_tensor)
+     #print(len(list_tensor))
+     #print(list_tensor)
 
      return torch.tensor(list_tensor, dtype=float)
 
