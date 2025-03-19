@@ -7,7 +7,6 @@ from src.utils import generate_dice_for_move, encode_backgammonstate
 import torch.optim as optim
 import numpy as np
 import logging
-import copy
 
 
 logging.basicConfig(
@@ -20,12 +19,25 @@ logging.basicConfig(
 
 logger = logging.getLogger(__name__)
 
+def load_model():
+     path = "src/models/2000_g_training.pt"
+     try:
+          model = BackgammonModel(0.8, 0.2, 2000)
+          state_dict = torch.load(path, weights_only=True)
+          model.load_state_dict(state_dict)
+          model.eval()
+          logging.info("successfully deserialized the model from disk")
+          return model
+     except Exception as e:
+          logger.error("Could not load serialzed trace model from disk, exiting process")
+          exit(1)
 
 
-class ValueFunction(nn.Module):
+
+class BackgammonModel(nn.Module):
 
      def __init__(self , lambda_parameter : float, learning_rate : float, training_games : int):
-          super(ValueFunction, self).__init__()
+          super(BackgammonModel, self).__init__()
           self.lambda_parameter = lambda_parameter
           self.learning_rate = learning_rate
           self.training_games = training_games
@@ -78,9 +90,9 @@ class ValueFunction(nn.Module):
                     predictions.append(out)
 
           outputs = torch.stack(predictions)
-          logger.info(outputs) 
+          #logger.info(outputs) 
           max_index = torch.argmax(outputs[:, 1]).item()
-          logger.info(max_index)
+          #logger.info(max_index)
 
           return max_index
 
@@ -102,17 +114,36 @@ class ValueFunction(nn.Module):
           return torch.tensor([0.0, 0.0])
 
 
-     def train_model(self) -> None:
+     def beat_move_executed(self , curr : BackgammonState, next: BackgammonState, is_black : bool) -> bool:
+          if is_black:
+              return  curr.whiteCaught < next.whiteCaught
+          else:
+               return curr.blackCaught < next.blackCaught
+     
+     
+     def save_model_dict(self, PATH) -> None: 
+          torch.save(self.state_dict(), PATH)
+     
+     def infer_state(self, game_state : BackgammonState, dice : list[int] , is_black : bool) -> BackgammonState:
+          poss_next_state = generate_moves(game_state=game_state, is_black=is_black, dice=dice)
+          best_index = self.get_highest_prob_index_black(poss_next_state=poss_next_state, is_blacks_turn=is_black)
+
+          return poss_next_state[best_index]
+
+     def train_model(self) -> tuple[list[float], list[float]]:
           
           optimizer = optim.SGD(self.network.parameters(), lr=self.learning_rate)
+          white_beat_moves_per_game = []
+          black_beat_moves_per_game = []
 
           for x in range(self.training_games):
                logger.info(f"starting with game : {x}")
                e_t = torch.tensor([0.0, 0.0], dtype=float, requires_grad=False)
                is_blacks_turn = np.random.rand() > 0.5
                curr_game_state = STARTING_GAME_STATE
-               
                play_counter = 0
+               beat_moves_executed_white = 0
+               beat_moves_executed_black = 0
                eval_curr = self.forward(encode_backgammonstate(curr_game_state, is_black=is_blacks_turn), no_grad=True)
                while not curr_game_state.ended:
                     optimizer.zero_grad()
@@ -140,11 +171,12 @@ class ValueFunction(nn.Module):
                     eval_curr = eval_next.tolist()
                     play_counter +=1
                
+               white_beat_moves_per_game.append(beat_moves_executed_white)
+               black_beat_moves_per_game.append(beat_moves_executed_black)
                logger.info(f"played : {play_counter} games in game : {x} ")
-
-if __name__=='__main__':
-     value_function = ValueFunction(0.8, 0.1, 1)
-     value_function.train_model()
+          
+          self.save_model_dict("src/models/2000_g_training.pt")
+          return white_beat_moves_per_game, black_beat_moves_per_game
 
 
 

@@ -1,6 +1,9 @@
 from src.BackgammonState import BackgammonState
 import torch
 import random
+import logging
+
+logger = logging.getLogger(__name__)
 
 def generate_dice_for_move() -> list[int]:
      first = random.randint(1, 6)
@@ -95,5 +98,3 @@ def encode_backgammonstate(game_state : BackgammonState, is_black : bool) -> tor
      #print(list_tensor)
 
      return torch.tensor(list_tensor, dtype=float)
-
-#encode_backgammonstate(STARTING_GAME_STATE, True)
