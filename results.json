@@ -1,0 +1,26 @@
+{
+  "5000": {
+    "AI": 332,
+    "uniform": 268,
+    "avg_beat_ai": 3.92,
+    "std_beat_ai": 2.807145663830659,
+    "avg_beat_uniform": 3.7183333333333333,
+    "std_beat_uniform": 2.751657061334899
+  },
+  "10000": {
+    "AI": 383,
+    "uniform": 217,
+    "avg_beat_ai": 4.37,
+    "std_beat_ai": 2.8937385630793293,
+    "avg_beat_uniform": 3.93,
+    "std_beat_uniform": 2.68398452956139
+  },
+  "20000": {
+    "AI": 335,
+    "uniform": 265,
+    "avg_beat_ai": 3.6766666666666667,
+    "std_beat_ai": 2.8122298299717956,
+    "avg_beat_uniform": 4.005,
+    "std_beat_uniform": 2.5584926828141126
+  }
+}

@@ -1,6 +1,5 @@
 
 from src.BackgammonState import BackgammonState
-import math
 import logging
 
 logger = logging.getLogger(__name__)

@@ -19,10 +19,9 @@ logging.basicConfig(
 
 logger = logging.getLogger(__name__)
 
-def load_model():
-     path = "src/models/2000_g_training.pt"
+def load_model(path : str):
      try:
-          model = BackgammonModel(0.8, 0.2, 2000)
+          model = BackgammonModel(0.8, 0.2, 2000, "some_path")
           state_dict = torch.load(path, weights_only=True)
           model.load_state_dict(state_dict)
           model.eval()
@@ -30,17 +29,19 @@ def load_model():
           return model
      except Exception as e:
           logger.error("Could not load serialzed trace model from disk, exiting process")
+          logger.error(e)
           exit(1)
 
 
 
 class BackgammonModel(nn.Module):
 
-     def __init__(self , lambda_parameter : float, learning_rate : float, training_games : int):
+     def __init__(self , lambda_parameter : float, learning_rate : float, training_games : int, model_path : str):
           super(BackgammonModel, self).__init__()
           self.lambda_parameter = lambda_parameter
           self.learning_rate = learning_rate
           self.training_games = training_games
+          self.model_path = model_path
           self.network = self._init_mlp()
 
      
@@ -70,30 +71,23 @@ class BackgammonModel(nn.Module):
                return input_game_state
 
      def get_highest_prob_index_white(self, poss_next_state: list[BackgammonState], is_blacks_turn: bool) -> int:
-
           predictions = []
           for state in poss_next_state:
                     out = self.forward(encode_backgammonstate(game_state=state, is_black=is_blacks_turn), no_grad=True)
                     predictions.append(out)
-
           outputs = torch.stack(predictions)
           max_index = torch.argmax(outputs[:, 0]).item()
-
           return max_index
           
 
      def get_highest_prob_index_black(self, poss_next_state : list[BackgammonState], is_blacks_turn : bool) -> int:
-
           predictions = []
           for state in poss_next_state:
                     out = self.forward(encode_backgammonstate(game_state=state, is_black=is_blacks_turn), no_grad=True)
                     predictions.append(out)
 
           outputs = torch.stack(predictions)
-          #logger.info(outputs) 
           max_index = torch.argmax(outputs[:, 1]).item()
-          #logger.info(max_index)
-
           return max_index
 
 
@@ -121,8 +115,8 @@ class BackgammonModel(nn.Module):
                return curr.blackCaught < next.blackCaught
      
      
-     def save_model_dict(self, PATH) -> None: 
-          torch.save(self.state_dict(), PATH)
+     def save_model_dict(self) -> None: 
+          torch.save(self.state_dict(), self.model_path)
      
      def infer_state(self, game_state : BackgammonState, dice : list[int] , is_black : bool) -> BackgammonState:
           poss_next_state = generate_moves(game_state=game_state, is_black=is_black, dice=dice)
@@ -133,18 +127,14 @@ class BackgammonModel(nn.Module):
      def train_model(self) -> tuple[list[float], list[float]]:
           
           optimizer = optim.SGD(self.network.parameters(), lr=self.learning_rate)
-          white_beat_moves_per_game = []
-          black_beat_moves_per_game = []
 
           for x in range(self.training_games):
                logger.info(f"starting with game : {x}")
                e_t = torch.tensor([0.0, 0.0], dtype=float, requires_grad=False)
                is_blacks_turn = np.random.rand() > 0.5
                curr_game_state = STARTING_GAME_STATE
-               play_counter = 0
-               beat_moves_executed_white = 0
-               beat_moves_executed_black = 0
                eval_curr = self.forward(encode_backgammonstate(curr_game_state, is_black=is_blacks_turn), no_grad=True)
+               play_counter = 0
                while not curr_game_state.ended:
                     optimizer.zero_grad()
                     poss_next_state = generate_moves(game_state=curr_game_state, is_black=is_blacks_turn, dice=generate_dice_for_move())
@@ -162,21 +152,22 @@ class BackgammonModel(nn.Module):
                     else:
                          e_t = self.lambda_parameter * e_t + torch.tensor(eval_curr)
                     complete_error = td_error * e_t
-                   
-                    grad_output = torch.ones_like(complete_error)
-                    complete_error.backward(grad_output)
+                    #grad_output = torch.ones_like(complete_error)
+                    complete_error.backward(gradient=complete_error)
                     optimizer.step()
                     curr_game_state = poss_next_state[index_next_state]
                     is_blacks_turn = not is_blacks_turn
                     eval_curr = eval_next.tolist()
-                    play_counter +=1
+                    play_counter += 1
                
-               white_beat_moves_per_game.append(beat_moves_executed_white)
-               black_beat_moves_per_game.append(beat_moves_executed_black)
                logger.info(f"played : {play_counter} games in game : {x} ")
           
-          self.save_model_dict("src/models/2000_g_training.pt")
-          return white_beat_moves_per_game, black_beat_moves_per_game
+          self.save_model_dict()
+
+
+if __name__ == "__main__":
+     value_function = BackgammonModel(0.8, 0.2, 50, model_path="src/models/50_g_training.pt")
+     value_function.train_model()
 
 
 
