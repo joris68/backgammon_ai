@@ -1,0 +1,14 @@
+{
+    "model": 672,
+    "uniform": 328,
+    "avg_beat_ai": 4.743,
+    "std_beat_ai": 2.8912471894167595,
+    "avg_beat_uniform": 4.186,
+    "std_beat_uniform": 2.859297042907501,
+    "avg_open_positions_model": 82.579,
+    "std_open_positions_model": 30.469298271163666,
+    "avg_open_positions_uniform": 87.541,
+    "std_open_positions_uniform": 28.274790587779474,
+    "avg_game_length": 56.653,
+    "std_game_length": 11.846980287902143
+}
