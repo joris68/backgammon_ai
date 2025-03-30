@@ -107,13 +107,6 @@ class BackgammonModel(nn.Module):
           
           return torch.tensor([0.0, 0.0])
 
-
-     def beat_move_executed(self , curr : BackgammonState, next: BackgammonState, is_black : bool) -> bool:
-          if is_black:
-              return  curr.whiteCaught < next.whiteCaught
-          else:
-               return curr.blackCaught < next.blackCaught
-     
      
      def save_model_dict(self) -> None: 
           torch.save(self.state_dict(), self.model_path)
@@ -129,11 +122,13 @@ class BackgammonModel(nn.Module):
           optimizer = optim.SGD(self.network.parameters(), lr=self.learning_rate)
 
           for x in range(self.training_games):
-               logger.info(f"starting with game : {x}")
-               e_t = torch.tensor([0.0, 0.0], dtype=float, requires_grad=False)
+               if x % 100 == 0:
+                    logger.info(f"starting with game : {x}")
+               e_t = np.array([0.0, 0.0])
                is_blacks_turn = np.random.rand() > 0.5
                curr_game_state = STARTING_GAME_STATE
-               eval_curr = self.forward(encode_backgammonstate(curr_game_state, is_black=is_blacks_turn), no_grad=True)
+               eval_curr = np.array(self.forward(encode_backgammonstate(curr_game_state, is_black=is_blacks_turn), no_grad=True).tolist())
+               eval_next_outside = None
                play_counter = 0
                while not curr_game_state.ended:
                     optimizer.zero_grad()
@@ -145,28 +140,26 @@ class BackgammonModel(nn.Module):
                          index_next_state = self.get_highest_prob_index_white(poss_next_state=poss_next_state, is_blacks_turn=is_blacks_turn)
                     
                     eval_next =  self.forward(input_game_state=encode_backgammonstate(poss_next_state[index_next_state], is_black=is_blacks_turn), no_grad=False)
+                    eval_next_outside = np.array(eval_next.tolist())
                     reward_next = self.get_reward_vector(poss_next_state[index_next_state])
-                    td_error = self.TD_Error(reward_next=reward_next, eval_next=eval_next, eval_prev=eval_curr)
-                    if isinstance(eval_curr, torch.Tensor):
-                         e_t = self.lambda_parameter * e_t + eval_curr
-                    else:
-                         e_t = self.lambda_parameter * e_t + torch.tensor(eval_curr)
-                    complete_error = td_error * e_t
-                    #grad_output = torch.ones_like(complete_error)
+                    td_error = self.TD_Error(reward_next=reward_next, eval_next=eval_next, eval_prev=torch.tensor(eval_curr))
+                    complete_error = td_error * torch.tensor(e_t)
                     complete_error.backward(gradient=complete_error)
                     optimizer.step()
+                    e_t = (self.lambda_parameter * e_t) + (eval_next_outside - eval_curr)
                     curr_game_state = poss_next_state[index_next_state]
                     is_blacks_turn = not is_blacks_turn
-                    eval_curr = eval_next.tolist()
+                    eval_curr = eval_next_outside
                     play_counter += 1
                
-               logger.info(f"played : {play_counter} games in game : {x} ")
+               if x % 100 == 0:
+                    logger.info(f"played : {play_counter} games in game : {x} ")
           
           self.save_model_dict()
 
 
 if __name__ == "__main__":
-     value_function = BackgammonModel(0.8, 0.2, 50, model_path="src/models/50_g_training.pt")
+     value_function = BackgammonModel(0.8, 0.2, 50, model_path="src/models/50000_g_training.pt")
      value_function.train_model()
 
 
