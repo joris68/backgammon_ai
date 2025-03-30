@@ -80,21 +80,15 @@ def encode_turn(is_black : bool) -> list[float]:
 def encode_backgammonstate(game_state : BackgammonState, is_black : bool) -> torch.Tensor:
 
      list_tensor = []
-
      field_encoding = []
      for field in game_state.board:
           encode_field(field, store=field_encoding)
      
-     #print(len(field_encoding))
-
      list_tensor.extend(field_encoding)
      list_tensor.append(encode_outside(game_state.whiteCaught))
      list_tensor.append(encode_outside(game_state.blackCaught))
      list_tensor.append(encode_borne_off(game_state.whiteOutside))
      list_tensor.append(encode_borne_off(game_state.blackOutside))
      list_tensor.extend(encode_turn(is_black=is_black))
-
-     #print(len(list_tensor))
-     #print(list_tensor)
 
      return torch.tensor(list_tensor, dtype=float)

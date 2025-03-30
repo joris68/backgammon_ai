@@ -32,6 +32,21 @@ def is_beat_move_white(curr : BackgammonState, next : BackgammonState) -> int:
      else:
           return 0
 
+def get_open_positions_black(curr: BackgammonState) -> int:
+     counter = 0
+     for x in curr.board:
+          if x == 1:
+               counter += 1
+     return counter
+
+
+def get_open_positions_white(curr : BackgammonState) -> int:
+     counter = 0
+     for x in curr.board:
+          if x == -1:
+               counter +=1
+     return counter
+
 
 class GammonMonteCarlo:
      
@@ -39,12 +54,14 @@ class GammonMonteCarlo:
           self.number_of_games : int = number_of_games
           self.valueFunction : BackgammonModel = load_model(model_path)
 
-     def test_value_function(self) -> tuple[int, int, list[int], list[int]]:
+     def test_value_function(self) -> dict:
           AI_won = 0
           uniform_won = 0
-
           beat_moves_model = []
           beat_moves_uniform = []
+          open_positions_model = []
+          open_positions_uniform = []
+          game_lengths = []
 
           for x in range(self.number_of_games):
                if x % 10 == 0:
@@ -54,29 +71,48 @@ class GammonMonteCarlo:
 
                beat_moves_model_game = 0
                beat_moves_uniform_game = 0
+               open_positions_uniform_game = 0
+               open_positions_model_game = 0
+               play_counter = 0
 
                while not curr_game_state.ended:
                     the_dice = generate_dice_for_move()
                     if is_black:
                          next_state = self.valueFunction.infer_state(game_state=curr_game_state, dice=the_dice, is_black=is_black)
                          beat_moves_model_game += is_beat_move_black(curr=curr_game_state, next=next_state)
+                         open_positions_model_game += get_open_positions_black(curr=next_state)
                          curr_game_state = next_state
                     else:
                          poss_next_states = generate_moves(game_state=curr_game_state, is_black=is_black, dice=the_dice)
                          next_state = np.random.choice(poss_next_states)
                          beat_moves_uniform_game += is_beat_move_white(curr=curr_game_state, next=next_state)
+                         open_positions_uniform_game += get_open_positions_white(curr=next_state)
                          curr_game_state = next_state
                     
                     is_black = not is_black
+                    play_counter += 1
                
                beat_moves_model.append(beat_moves_model_game)
                beat_moves_uniform.append(beat_moves_uniform_game)
+               game_lengths.append(play_counter)
+               open_positions_model.append(open_positions_model_game)
+               open_positions_uniform.append(open_positions_uniform_game)
+
                if curr_game_state.whiteOutside == 15:
                     uniform_won += 1
                else:
                     AI_won += 1
           
-          return AI_won, uniform_won, beat_moves_model, beat_moves_uniform
+
+          return {
+               "model_won" : AI_won,
+               "uniform_won" : uniform_won,
+               "beat_moves_model" : beat_moves_model,
+               "beat_moves_uniform" : beat_moves_uniform,
+               "open_positions_model": open_positions_model,
+               "open_positions_uniform" : open_positions_uniform,
+               "game_lengths" : game_lengths
+          }
                     
 
      def _simulate_games(self) -> tuple[list[int], list[str], list[list[int]]]:
@@ -191,71 +227,6 @@ def plot_average_game_length(game_lengths : list[int]) -> None:
      plt.title('Distribution of Plays per Game')
      plt.savefig('distribution_plays_per_game.png', dpi=300)
      plt.show()
-
-
-if __name__ == '__main__':
-     #"src/models/2000_g_training.pt"
-
-     eval_results = {}
-     """
-     monte = GammonMonteCarlo(600, model_path="src/models/2000_g_training.pt")
-     AI_2000, uniform_2000, beat_moves_model_2000, beat_moves_uniform_2000 = monte.test_value_function()
-     result_2000 =  {
-          "AI" : AI_2000,
-          "uniform" : uniform_2000,
-          "avg_beat_ai" : statistics.mean(beat_moves_model_2000),
-          "std_beat_ai" : statistics.stdev(beat_moves_model_2000),
-          "avg_beat_uniform" : statistics.mean(beat_moves_uniform_2000),
-          "std_beat_uniform" : statistics.stdev(beat_moves_uniform_2000)
-     }
-     """
-     ###############################
-     monte = GammonMonteCarlo(600, model_path="src/models/5000_g_training.pt")
-     AI_5000, uniform_5000, beat_moves_model_5000, beat_moves_uniform_5000 = monte.test_value_function()
-     result_5000 =  {
-          "AI" : AI_5000,
-          "uniform" : uniform_5000,
-          "avg_beat_ai" : statistics.mean(beat_moves_model_5000),
-          "std_beat_ai" : statistics.stdev(beat_moves_model_5000),
-          "avg_beat_uniform" : statistics.mean(beat_moves_uniform_5000),
-          "std_beat_uniform" : statistics.stdev(beat_moves_uniform_5000)
-     }
-
-     ##############################
-     monte = GammonMonteCarlo(600, model_path="src/models/10000_g_training.pt")
-     AI_10000, uniform_10000, beat_moves_model_10000, beat_moves_uniform_10000 = monte.test_value_function()
-     result_10000 =  {
-          "AI" : AI_10000,
-          "uniform" : uniform_10000,
-          "avg_beat_ai" : statistics.mean(beat_moves_model_10000),
-          "std_beat_ai" : statistics.stdev(beat_moves_model_10000),
-          "avg_beat_uniform" : statistics.mean(beat_moves_uniform_10000),
-          "std_beat_uniform" : statistics.stdev(beat_moves_uniform_10000)
-     }
-
-     ##########################################################
-     monte = GammonMonteCarlo(600, model_path="src/models/20000_g_training.pt")
-     AI_20000, uniform_20000, beat_moves_model_20000, beat_moves_uniform_20000 = monte.test_value_function()
-     result_20000 =  {
-          "AI" : AI_20000,
-          "uniform" : uniform_20000,
-          "avg_beat_ai" : statistics.mean(beat_moves_model_20000),
-          "std_beat_ai" : statistics.stdev(beat_moves_model_20000),
-          "avg_beat_uniform" : statistics.mean(beat_moves_uniform_20000),
-          "std_beat_uniform" : statistics.stdev(beat_moves_uniform_20000)
-     }
-
-     eval_results["5000"] = result_5000
-     eval_results["10000"] = result_10000
-     eval_results["20000"] = result_20000
-
-     with open("results.json", "w") as file:
-          json.dump(eval_results, file)
-
-
-
-
-
 
 
 
