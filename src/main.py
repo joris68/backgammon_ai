@@ -29,7 +29,7 @@ def main():
      model_0 = BackgammonModel(0.8, 0.1, 0, model_path=Path("src/models/0_g_training.pt"))
      model_0.train_model()
 
-     monte_0 = GammonMonteCarlo(1000, model_path="src/models/50000_g_training.pt")
+     monte_0 = GammonMonteCarlo(1000, model_path=Path("src/models/0_g_training.pt"))
      res_0 = monte_0.test_value_function()
      result_0 =  calc_result_statistics(res=res_0)
      save_result(result=result_5000, name="result_0")
@@ -39,7 +39,7 @@ def main():
      model_5000 = BackgammonModel(0.8, 0.1, 5000, model_path=Path("src/models/5000_g_training.pt"))
      model_5000.train_model()
 
-     monte_5000 = GammonMonteCarlo(1000, model_path="src/models/50000_g_training.pt")
+     monte_5000 = GammonMonteCarlo(1000, model_path=Path("src/models/5000_g_training.pt"))
      res_5000 = monte_5000.test_value_function()
      result_5000 =  calc_result_statistics(res=res_5000)
      save_result(result=result_5000, name="result_5000")
