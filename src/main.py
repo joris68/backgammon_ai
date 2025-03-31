@@ -82,15 +82,15 @@ def test_models_repeatedly(runs : int, models : list[str], names : list[str]):
 
 #test_models_repeatedly(5, [ "src/models/200000_g_training.pt"], ["repeat_200000.json"])
 
-test_models_repeatedly(5, [ "src/models/250000_g_training.pt"], ["repeat_250000.json"])
+#test_models_repeatedly(5, [ "src/models/250000_g_training.pt"], ["repeat_250000.json"])
 
 
 def train_model(games : int):
      logger.info(f"starting to train model with games : {games}")
-     model = BackgammonModel(0.8, 0.1, games, model_path=Path(f"src/models/{games}_g_training.pt"))
+     model = BackgammonModel(0.8, 0.1, games, model_path=Path(f"src/models/{games}_g_training_1500_nodes.pt"))
      model.train_model()
 
-#train_model(games=250000)
+train_model(games=30000)
 
 
 

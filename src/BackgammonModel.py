@@ -47,8 +47,8 @@ class BackgammonModel(nn.Module):
      
      def _init_mlp(self) -> nn.ModuleList:
           layers = nn.ModuleList()
-          first_layer = nn.Linear(in_features=198 ,out_features=80, dtype=float)
-          second_layer = nn.Linear(in_features=80 , out_features=2,  dtype=float)
+          first_layer = nn.Linear(in_features=198 ,out_features=1500, dtype=float)
+          second_layer = nn.Linear(in_features=1500 , out_features=2,  dtype=float)
           nn.init.normal_(first_layer.weight, mean=0.0, std=1.0)
           nn.init.normal_(second_layer.weight, mean=0.0, std=1.0)
           layers.append(first_layer)
