@@ -47,8 +47,8 @@ class BackgammonModel(nn.Module):
      
      def _init_mlp(self) -> nn.ModuleList:
           layers = nn.ModuleList()
-          first_layer = nn.Linear(in_features=198 ,out_features=1500, dtype=float)
-          second_layer = nn.Linear(in_features=1500 , out_features=2,  dtype=float)
+          first_layer = nn.Linear(in_features=198 ,out_features=500, dtype=float)
+          second_layer = nn.Linear(in_features=500 , out_features=2,  dtype=float)
           nn.init.normal_(first_layer.weight, mean=0.0, std=1.0)
           nn.init.normal_(second_layer.weight, mean=0.0, std=1.0)
           layers.append(first_layer)
@@ -101,9 +101,9 @@ class BackgammonModel(nn.Module):
      def get_reward_vector(self, game_state : BackgammonState) -> torch.Tensor:
 
           if game_state.whiteOutside == 15:
-               return torch.tensor([1.0, 0.0])
+               return torch.tensor([5.0, 0.0])
           if game_state.blackOutside == 15:
-               return torch.tensor([0.0, 1.0])
+               return torch.tensor([0.0, 5.0])
           
           return torch.tensor([0.0, 0.0])
 
@@ -113,7 +113,10 @@ class BackgammonModel(nn.Module):
      
      def infer_state(self, game_state : BackgammonState, dice : list[int] , is_black : bool) -> BackgammonState:
           poss_next_state = generate_moves(game_state=game_state, is_black=is_black, dice=dice)
-          best_index = self.get_highest_prob_index_black(poss_next_state=poss_next_state, is_blacks_turn=is_black)
+          if is_black:
+               best_index = self.get_highest_prob_index_black(poss_next_state=poss_next_state, is_blacks_turn=is_black)
+          else:
+               best_index = self.get_highest_prob_index_white(poss_next_state=poss_next_state, is_blacks_turn=is_black)
 
           return poss_next_state[best_index]
 
@@ -157,12 +160,12 @@ class BackgammonModel(nn.Module):
           
           self.save_model_dict()
 
-
+"""
 if __name__ == "__main__":
      value_function = BackgammonModel(0.8, 0.2, 50, model_path="src/models/50000_g_training.pt")
      value_function.train_model()
 
-
+"""
 
 
                     

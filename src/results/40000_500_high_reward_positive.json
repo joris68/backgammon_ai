@@ -1,0 +1,72 @@
+[
+    {
+        "model": 312,
+        "uniform": 688,
+        "avg_beat_ai": 0.888,
+        "std_beat_ai": 1.2012072672519505,
+        "avg_beat_uniform": 3.314,
+        "std_beat_uniform": 2.0961387830479636,
+        "avg_open_positions_model": 58.12,
+        "std_open_positions_model": 20.344716943410827,
+        "avg_open_positions_uniform": 60.863,
+        "std_open_positions_uniform": 18.41535653622694,
+        "avg_game_length": 49.65,
+        "std_game_length": 7.001036674272926
+    },
+    {
+        "model": 283,
+        "uniform": 717,
+        "avg_beat_ai": 0.794,
+        "std_beat_ai": 1.1039849558679606,
+        "avg_beat_uniform": 3.364,
+        "std_beat_uniform": 2.0058732580917287,
+        "avg_open_positions_model": 57.489,
+        "std_open_positions_model": 19.53298278339528,
+        "avg_open_positions_uniform": 61.075,
+        "std_open_positions_uniform": 17.945456651041635,
+        "avg_game_length": 49.826,
+        "std_game_length": 7.168061460751094
+    },
+    {
+        "model": 282,
+        "uniform": 718,
+        "avg_beat_ai": 0.773,
+        "std_beat_ai": 1.0975771843818893,
+        "avg_beat_uniform": 3.344,
+        "std_beat_uniform": 2.0847086151330623,
+        "avg_open_positions_model": 58.475,
+        "std_open_positions_model": 20.777561986000237,
+        "avg_open_positions_uniform": 60.114,
+        "std_open_positions_uniform": 17.779570217446683,
+        "avg_game_length": 49.395,
+        "std_game_length": 6.965162488304813
+    },
+    {
+        "model": 312,
+        "uniform": 688,
+        "avg_beat_ai": 0.807,
+        "std_beat_ai": 1.1309420984427232,
+        "avg_beat_uniform": 3.256,
+        "std_beat_uniform": 2.049063850313763,
+        "avg_open_positions_model": 57.299,
+        "std_open_positions_model": 20.429610078706055,
+        "avg_open_positions_uniform": 61.225,
+        "std_open_positions_uniform": 17.392840075326568,
+        "avg_game_length": 49.255,
+        "std_game_length": 6.617232258487136
+    },
+    {
+        "model": 301,
+        "uniform": 699,
+        "avg_beat_ai": 0.777,
+        "std_beat_ai": 1.0790900960695708,
+        "avg_beat_uniform": 3.295,
+        "std_beat_uniform": 1.942613895952757,
+        "avg_open_positions_model": 57.586,
+        "std_open_positions_model": 19.98669737780787,
+        "avg_open_positions_uniform": 60.177,
+        "std_open_positions_uniform": 17.328010010700332,
+        "avg_game_length": 49.486,
+        "std_game_length": 7.140363351314049
+    }
+]

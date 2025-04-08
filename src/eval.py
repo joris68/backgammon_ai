@@ -3,7 +3,7 @@ from pathlib import Path
 import json
 import statistics
 
-FILES = ["repeat_5000.json", "repeat_50000.json", "repeat_100000.json", "repeat_150000.json", "repeat_200000.json", "repeat_250000.json"]
+FILES = ["20000_500_high_reward_positive.json", "40000_500_high_reward_positive.json", "60000_500_high_reward_positive.json", "80000_500_high_reward_positive.json", "100000_500_high_reward_positive.json"]
 
 PATH = "src/results/"
 
